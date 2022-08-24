@@ -185,7 +185,8 @@ class ConnectAttendance {
             }
 
             $list = sprintf(
-                '<h6 style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.125);">%s</h6><ul style="list-style-type: none;">',
+                '<h6 style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.125);">%s%s</h6><ul style="list-style-type: none;">',
+                count($attendance_modules) > 1 ? sprintf('%s: ', $attendance->name) : '',
                 get_string('sessions', 'mod_attendance')
             );
 
