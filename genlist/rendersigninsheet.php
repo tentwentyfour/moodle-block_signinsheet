@@ -46,92 +46,22 @@ function printHeaderLogo()
 
 function renderGroup()
 {
-    global $DB, $cid, $CFG;
-    $outputhtml = '';
+    global $DB, $CFG;
 
-    $cid = required_param('cid', PARAM_INT);
-    $selectedgroupid = optional_param('selectgroupsec', '', PARAM_INT);
-    $extra = optional_param('extra', '', PARAM_INT);
+    list(
+        $cid,
+        $orderby,
+        $extra,
+        $selectedgroupid,
+        $appendorder,
+    ) = loadParams();
 
-    $appendorder = '';
-    $orderby = optional_param('orderby', '', PARAM_TEXT);
+    $query = 'SELECT * FROM ' . $CFG->prefix . 'groups_members WHERE groupid = ?' . $appendorder;
+    $users = $DB->get_records_sql($query, array($selectedgroupid));
 
-    if ($orderby == 'byid') {
-        $appendorder = ' order by userid';
-    } elseif ($orderby == 'firstname') {
-        $appendorder = ' order by  (select firstname from '.$CFG->prefix.'user usr where userid = usr.id)';
-    } elseif ($orderby == 'lastname') {
-        $appendorder = ' order by  (select lastname from '.$CFG->prefix.'user usr where userid = usr.id)';
-    } else {
-        $appendorder = ' order by userid';
-    }
-
-    // Check if we need to include a custom field in the list created
-    $addfieldenabled = get_config('block_signinsheet', 'includecustomfield');
     $groupname = $DB->get_record('groups', array('id'=>$selectedgroupid), $fields='*', $strictness=IGNORE_MISSING);
-    $query = 'select * from '.$CFG->prefix.'groups_members where groupid = ?' . $appendorder;
 
-    $result = $DB->get_records_sql($query, array($selectedgroupid));
-
-    $courseData = $DB->get_record('course', array('id'=>$cid), 'fullname, shortname', $strictness=IGNORE_MISSING);
-    $outputhtml .= '<span style="font-size:25px"> <b>'. get_string('signaturesheet', 'block_signinsheet').'</span><br>';
-
-    $outputhtml .= '<span style="font-size:20px"> <b>'. get_string('course', 'block_signinsheet').': </b>' .$courseData->shortname.' - ' .$courseData->fullname.'</span><br><p></p>';
-
-    $reportdate = date('l jS \of F Y');
-    $outputhtml .= '<span style="font-size:18px"> <b>'. get_string('date', 'block_signinsheet').':</b> '.$reportdate.'</span><p></p>';
-
-    $outputhtml .= '<span style="font-size:18px"> <b>'. get_string('description', 'block_signinsheet').': __________________________________________________</b> </span><p></p>&nbsp;<p></p>&nbsp;';
-
-    if (isset($groupname)) {
-        $outputhtml .= '<span style="font-size:18px">'. $groupname->name . '</span><p></p>';
-    }
-
-    $outputhtml .= '<table style="border-style: solid;" width="100%"  border="1px"><tr>
-					<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="25%"><b>'. get_string('personname', 'block_signinsheet').'</b></td>
-				';
-
-
-
-    if ($addfieldenabled) {
-        $fieldid = get_config('block_signinsheet', 'customfieldselect');
-        $fieldname = $DB->get_field('user_info_field', 'name', array('id'=>$fieldid), $strictness=IGNORE_MISSING);
-        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'.$fieldname.'</b></td>';
-    }
-
-    //Add custom field text if enabled
-    $addtextfield = get_config('block_signinsheet', 'includecustomtextfield');
-    if ($addtextfield) {
-        $fielddata = get_config('block_signinsheet', 'customtext');
-        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'.$fielddata.'</b></td>';
-    }
-    // Id number field enabled
-    $addidfield = get_config('block_signinsheet', 'includeidfield');
-    if ($addidfield) {
-        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="15%"><b>'. get_string('idnumber', 'block_signinsheet').' </b></td>';
-    }
-
-    // Add additional mdl_user field if enabled
-    $addUserField = get_config('block_signinsheet', 'includedefaultfield');
-    if ($addUserField) {
-        $mdlUserFieldName = get_config('block_signinsheet', 'defaultfieldselection');
-        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'. $mdlUserFieldName.' </b></td>';
-    }
-
-    $outputhtml .= '<td style="border-right: thin solid; border-bottom: thin solid" border="1px"><b>'. get_string('signature', 'block_signinsheet').'</b></td></tr>';
-
-    foreach ($result as $ur) {
-        $outputhtml .=  printSingleUser($ur->userid, $cid);
-    }
-
-    //do we need to print additional lines
-    for ($x = 1; $x <= $extra; $x++) {
-        $outputhtml .=  printblank();
-    }
-
-    $outputhtml .= '</tr></table>';
-
-    return $outputhtml;
+    return renderSignatureSheet($cid, $users, $extra, $groupname);
 }
 
 /*
@@ -141,22 +71,15 @@ function renderGroup()
  * */
 function renderAll($extra)
 {
-    global $DB, $cid, $OUTPUT, $CFG;
+    global $DB, $CFG;
 
-    $appendorder = '';
-    $orderby = '';
-    $cid = required_param('cid', PARAM_INT);
-    $orderby = optional_param('orderby', '', PARAM_TEXT);
-
-    if ($orderby == 'byid') {
-        $appendorder = ' order by userid';
-    } elseif ($orderby == 'firstname') {
-        $appendorder = ' order by  (select firstname from '.$CFG->prefix.'user usr where userid = usr.id)';
-    } elseif ($orderby == 'lastname') {
-        $appendorder = ' order by  (select lastname from '.$CFG->prefix.'user usr where userid = usr.id)';
-    } else {
-        $appendorder = ' order by  (select firstname from '.$CFG->prefix.'user usr where userid = usr.id)';
-    }
+    list(
+        $cid,
+        $orderby,
+        $extra,
+        $selectedgroupid,
+        $appendorder,
+    ) = loadParams();
 
     // Check if we need to include inactive participants
     $excludeinactiveclause = get_config('block_signinsheet', 'excludeinactive') ? ' AND en.status = 0 ' : '';
@@ -164,23 +87,67 @@ function renderAll($extra)
     $query = 'SELECT en.userid FROM ' . $CFG->prefix . 'user_enrolments en WHERE en.enrolid IN (SELECT e.id FROM '. $CFG->prefix . 'enrol e WHERE courseid= ?)';
     $query .= $excludeinactiveclause . $appendorder;
 
-    // Check if we need to include a custom field
+    // Get the list of users for this particular course
+    $users = $DB->get_records_sql($query, array($cid));
+
+    return renderSignatureSheet($cid, $users, $extra);
+}
+
+function loadParams()
+{
+    global $CFG;
+
+    $cid = required_param('cid', PARAM_INT);
+    $orderby = optional_param('orderby', '', PARAM_TEXT);
+    $extra = optional_param('extra', '', PARAM_INT);
+    $selectedgroupid = optional_param('selectgroupsec', '', PARAM_INT);
+
+    $appendorder = '';
+
+    if ($orderby == 'byid') {
+        $appendorder = ' ORDER BY userid';
+    } elseif ($orderby == 'firstname') {
+        $appendorder = ' ORDER BY (SELECT firstname FROM '.$CFG->prefix.'user usr WHERE userid = usr.id)';
+    } elseif ($orderby == 'lastname') {
+        $appendorder = ' ORDER BY (SELECT lastname FROM '.$CFG->prefix.'user usr WHERE userid = usr.id)';
+    } else {
+        $appendorder = ' ORDER BY (SELECT firstname FROM '.$CFG->prefix.'user usr WHERE userid = usr.id)';
+    }
+
+    return [
+        $cid,
+        $orderby,
+        $extra,
+        $selectedgroupid,
+        $appendorder,
+    ];
+}
+
+function renderSignatureSheet($cid, $users, $extra = 0, $groupname = null)
+{
+    global $DB;
+
+    $attendance = \block_signinsheet\ConnectAttendance::getInstance();
+    $attendanceContext = $attendance->getContext();
+
+    $courseData = $DB->get_record('course', array('id' => $cid), 'fullname, shortname', $strictness=IGNORE_MISSING);
+
+    // Check if we need to include a custom field in the list created
     $addfieldenabled = get_config('block_signinsheet', 'includecustomfield');
 
-    // Get the list of users for this particular course
-    $result = $DB->get_records_sql($query, array($cid));
-
-    $courseData = $DB->get_record('course', array('id'=>$cid), 'fullname, shortname', $strictness=IGNORE_MISSING);
     $outputhtml = '';
     $outputhtml .= '<span style="font-size:25px"> <b>'. get_string('signaturesheet', 'block_signinsheet').'</span><br>';
 
     $outputhtml .= '<span style="font-size:20px"> <b>'. get_string('course', 'block_signinsheet').': </b>' .$courseData->shortname.' - ' .$courseData->fullname.'</span><br><p></p>';
 
-    $reportdate = date('l jS \of F Y');
+    $reportdate = isset($attendanceContext['session_display_datetime']) ? $attendanceContext['session_display_datetime'] : date('l jS \of F Y');
     $outputhtml .= '<span style="font-size:18px"> <b>'. get_string('date', 'block_signinsheet').':</b> '.$reportdate.'</span><p></p>';
 
     $outputhtml .= '<span style="font-size:18px"> <b>'. get_string('description', 'block_signinsheet').': __________________________________________________</b> </span><p></p>&nbsp;<p></p>&nbsp;';
 
+    if (isset($groupname)) {
+        $outputhtml .= '<span style="font-size:18px">'. $groupname->name . '</span><p></p>';
+    }
 
     $outputhtml .= '<table style="border-style: solid;" width="100%"  border="1px"><tr>
 					<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="25%"><b>'. get_string('personname', 'block_signinsheet').'</b></td>
@@ -200,7 +167,6 @@ function renderAll($extra)
         $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'.$fielddata.'</b></td>';
     }
 
-
     // Id number field enabled
     $addidfield = get_config('block_signinsheet', 'includeidfield');
     if ($addidfield) {
@@ -210,25 +176,21 @@ function renderAll($extra)
     // Add additional mdl_user field if enabled
     $addUserField = get_config('block_signinsheet', 'includedefaultfield');
     if ($addUserField) {
-        $mdlFieldName = get_config('block_signinsheet', 'defaultfieldselection');
-        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'. $mdlFieldName.' </b></td>';
+        $mdlUserFieldName = get_config('block_signinsheet', 'defaultfieldselection');
+        $outputhtml.='<td style="border-right: thin solid; border-bottom: thin solid" border="1px" width="20%"><b>'. $mdlUserFieldName.' </b></td>';
     }
-
 
     // Signature block space
-    $outputhtml .='	<td style="border-right: thin solid; border-bottom: thin solid" border="1px"><b>'.get_string('signature', 'block_signinsheet').'</b></td>
-	</tr>';
+    $outputhtml .= '<td style="border-right: thin solid; border-bottom: thin solid" border="1px"><b>'. get_string('signature', 'block_signinsheet').'</b></td></tr>';
 
-    foreach ($result as $us) {
-        $outputhtml .=  printSingleUser($us->userid, $cid);
+    foreach ($users as $user) {
+        $outputhtml .=  printSingleUser($user->userid, $cid);
     }
-
 
     //do we need to print additional lines
     for ($x = 1; $x <= $extra; $x++) {
         $outputhtml .=  printblank();
     }
-
 
     $outputhtml .= '</table>';
 

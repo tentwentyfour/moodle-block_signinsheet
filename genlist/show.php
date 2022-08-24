@@ -116,6 +116,8 @@ function buildMenu($cid)
 {
     global $CFG, $rendertype;
 
+    $attendance = \block_signinsheet\ConnectAttendance::getInstance();
+
     $orderby = optional_param('orderby', 'firstname', PARAM_TEXT);
     $selectgroupsec = optional_param('selectgroupsec', 'all', PARAM_TEXT);
 
@@ -135,9 +137,10 @@ function buildMenu($cid)
             <select name="orderby" id="orderby">
                 <option value="firstname">' .get_string('firstname', 'block_signinsheet').'</option>
                 <option value="lastname">'.get_string('lastname', 'block_signinsheet').'</option>
-            </select>
-            ' . $outputFilters . '
-            <input type="submit" value="'.get_string('update', 'block_signinsheet').'" />
+            </select>' .
+            $outputFilters .
+            $attendance->getFormFields() .
+            '&emsp;<input type="submit" value="'.get_string('update', 'block_signinsheet').'" />
         </form>
 
         <script>document.getElementById(\'orderby\').value="'.$orderby.'";</script>
@@ -148,8 +151,9 @@ function buildMenu($cid)
             <input type="hidden" name="cid" value="'.$cid.'" />
             <input type="hidden" name="rendertype" value="'.$rendertype.'" />
             <input type="hidden" name="selectgroupsec" value="'.$selectgroupsec.'">
-            <input type="hidden" name="orderby" value="'.$orderby.'">
-            <input type="submit" value="'.get_string('printbutton', 'block_signinsheet').'">
+            <input type="hidden" name="orderby" value="'.$orderby.'">' .
+            $attendance->getFormFields() .
+            '&emsp;<input type="submit" value="'.get_string('printbutton', 'block_signinsheet').'">
         </form>
     </div>';
 

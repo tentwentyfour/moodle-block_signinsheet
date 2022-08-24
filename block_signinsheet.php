@@ -74,9 +74,13 @@ function getSignInNav()
 
     $cid = optional_param('id', '', PARAM_INT);
 
-    $bodyhtml = '<img src="'.$CFG->wwwroot. '/blocks/signinsheet/printer.gif"/>
-    <a href="'.$CFG->wwwroot. '/blocks/signinsheet/genlist/show.php?cid='.$cid.'">'. get_string('genlist', 'block_signinsheet').'</a>
+    $icon = '<img src="'.$CFG->wwwroot. '/blocks/signinsheet/printer.gif"/>';
+
+    $bodyhtml = $icon . '<a href="'.$CFG->wwwroot. '/blocks/signinsheet/genlist/show.php?cid='.$cid.'">'. get_string('genlist', 'block_signinsheet').'</a>
     <br/>';
+
+    $attendance = \block_signinsheet\ConnectAttendance::getInstance();
+    $attendance->appendAttendanceSessionLinks($cid, $bodyhtml);
 
     return $bodyhtml;
 }
