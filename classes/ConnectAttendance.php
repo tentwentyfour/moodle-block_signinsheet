@@ -32,7 +32,9 @@ class ConnectAttendance {
         global $CFG;
 
         $this->plugin_info = \core_plugin_manager::instance()->get_plugin_info('mod_attendance');
-        $this->plugin_dir = $CFG->dirroot . $this->plugin_info->get_dir();
+        $this->plugin_dir = ($this->plugin_info !== null)
+            ? $CFG->dirroot . $this->plugin_info->get_dir()
+            : '';
     }
 
     public function getAttendanceModules($course_id)
@@ -98,7 +100,7 @@ class ConnectAttendance {
 
     public function getContext()
     {
-        if (!$this->plugin_info->is_enabled()) {
+        if ($this->plugin_info === null || !$this->plugin_info->is_enabled()) {
             return;
         }
 
@@ -160,7 +162,7 @@ class ConnectAttendance {
 
     public function appendAttendanceSessionLinks($course_id, &$output)
     {
-        if (!$this->plugin_info->is_enabled()) {
+        if ($this->plugin_info === null || !$this->plugin_info->is_enabled()) {
             return;
         }
 
