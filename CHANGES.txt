@@ -8,6 +8,15 @@ by Kyle Goslin & Daniel McSweeney
 Copyright 2013-2018 - Institute of Technology Blanchardstown.
 
 ----------------------------------------------------------------------
+
+Version 2.1
+Date: August 2022
+- fixes participant status query
+- replaced use of deprecated functions
+- improved pre-print form style
+- code linting and formatting
+- tested on Moodle 3.11
+
 Version 2.0
 
 Date: July 2018

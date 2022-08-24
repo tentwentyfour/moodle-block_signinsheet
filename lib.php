@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Signinsheet is free software: you can redistribute it and/or modify
@@ -13,8 +14,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
- 
+
+
 /**
  *
  * @package    block_signinsheet
@@ -33,10 +34,10 @@ require_once($CFG->libdir.'/formslib.php');
 //	Create the Moodle Form
 //
 // ===============
-class simplehtml_form extends moodleform {
-
-    function definition() {
-
+class simplehtml_form extends moodleform
+{
+    public function definition()
+    {
         $mform = $this->_form; // Don't forget the underscore!
         $filemanageropts = $this->_customdata['filemanageropts'];
 
@@ -48,48 +49,44 @@ class simplehtml_form extends moodleform {
     }
 }
 
-
-
 // ===============
 //
 //	Plugin File
 //
 // ===============
 // I M P O R T A N T
-// 
+//
 // This is the most confusing part. For each plugin using a file manager will automatically
 // look for this function. It always ends with _pluginfile. Depending on where you build
 // your plugin, the name will change. In case, it is a local plugin called file manager.
 
-function block_signinsheet_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function block_signinsheet_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array())
+{
     global $DB;
 
     if ($context->contextlevel != CONTEXT_SYSTEM) {
-    //    return false;
+        // return false;
     }
 
     require_login();
 
     if ($filearea != 'attachment') {
-      //  return false;
+        // return false;
     }
 
     $itemid = (int)array_shift($args);
 
     if ($itemid != 0) {
-     //   return false;
+        // return false;
     }
 
     $fs = get_file_storage();
 
     $filename = array_pop($args);
-    if (empty($args)) {
-        $filepath = '/';
-    } else {
-        $filepath = '/'.implode('/', $args).'/';
-    }
+    $filepath = empty($args) ? '/' : '/'.implode('/', $args).'/';
 
     $file = $fs->get_file($context->id, 'block_signinsheet', $filearea, $itemid, $filepath, $filename);
+
     if (!$file) {
         return false;
     }

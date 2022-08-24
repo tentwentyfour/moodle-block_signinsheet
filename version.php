@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Signinsheet is free software: you can redistribute it and/or modify
@@ -23,9 +24,9 @@
  */
 
 
-$plugin->version = 2018071221;      // The current module version (Date: YYYYMMDDXX).
+$plugin->version = 2022082500;      // The current module version (Date: YYYYMMDDXX).
 
-$plugin->requires = 2018051700.00;      // Requires this Moodle version.
+$plugin->requires = 2021051700;      // Requires this Moodle version.
 $plugin->component = 'block_signinsheet';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.0';
+$plugin->release = '2.1';
