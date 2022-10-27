@@ -74,7 +74,7 @@ function getSignInNav()
 
     $cid = optional_param('id', '', PARAM_INT);
 
-    $icon = '<img src="'.$CFG->wwwroot. '/blocks/signinsheet/printer.gif"/>';
+    $icon = '<img src="'.$CFG->wwwroot. '/blocks/signinsheet/printer.gif" style="margin-right: .33rem;"/>';
 
     $bodyhtml = $icon . '<a href="'.$CFG->wwwroot. '/blocks/signinsheet/genlist/show.php?cid='.$cid.'">'. get_string('genlist', 'block_signinsheet').'</a>
     <br/>';
