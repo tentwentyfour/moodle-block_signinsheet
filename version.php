@@ -24,7 +24,7 @@
  */
 
 
-$plugin->version = 2022082500;      // The current module version (Date: YYYYMMDDXX).
+$plugin->version = 2023031400;      // The current module version (Date: YYYYMMDDXX).
 
 $plugin->requires = 2021051700;      // Requires this Moodle version.
 $plugin->component = 'block_signinsheet';

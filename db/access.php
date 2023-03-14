@@ -40,6 +40,16 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/site:manageblocks'
     ),
 
+    'block/accessibility:myaddinstance' => array(
+        'riskbitmask'  => RISK_PERSONAL,
+        'captype'      => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes'   => array(
+          'user' => CAP_ALLOW,
+        ),
+        'clonepermissionsfrom' => 'moodle/my:manageblocks'
+    ),
+
     'block/signinsheet:viewblock' => array(
         'riskbitmask' => RISK_SPAM | RISK_XSS,
 
